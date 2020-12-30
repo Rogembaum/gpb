@@ -1,0 +1,78 @@
+---
+- name: Install Apache on Windows
+  hosts: client-5
+  gather_facts: no
+
+  vars:
+    temp_dir: C:\Temp
+    apache_url: "https://www.apachehaus.com/downloads/httpd-2.4.46-o111i-x64-vc15.zip"
+    fluentd_url: "http://packages.treasuredata.com.s3.amazonaws.com/4/windows/td-agent-4.0.1-x64.msi"
+    program_dir: "C:\\Program Files\\httpd"
+    httpd_conf: "C:\\Program Files\\httpd\\Apache24\\conf\\httpd.conf"
+    svroot: "C:\\Program Files\\httpd\\Apache24\\"
+    httpd_exe: "C:\\Program Files\\httpd\\Apache24\\bin\\httpd.exe"
+    
+  tasks: 
+
+    - name: Create dirs
+      win_file:
+          path: "{{ item }}"
+          state: directory
+      with_items:
+        - "{{ temp_dir }}"
+        - "{{program_dir}}"
+
+    - name: Download distrs
+      ansible.windows.win_get_url:
+          url: "{{ item }}"
+          dest: "{{ temp_dir }}"
+      with_items:
+          - "{{ apache_url }}"
+          - "{{ fluentd_url }}"
+
+    - name: Install Visual C thingy
+      ansible.windows.win_package:
+        path: http://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe
+        product_id: '{CF2BEA3C-26EA-32F8-AA9B-331F7E34BA97}'
+        arguments:
+        - /install
+        - /passive
+        - /norestart
+
+    - name: Check file httpd existingv
+      win_file:
+        path: "{{ httpd_conf }}"
+        state: file
+      register: file_status
+      ignore_errors: true
+
+    - name: Unarchive a file that is already on the remote machine
+      community.windows.win_unzip:
+        src: C:\Temp\httpd-2.4.46-o111i-x64-vc15.zip
+        dest: "{{program_dir}}"
+      when: file_status.failed
+
+    - name: Update a line using backrefs
+      community.windows.win_lineinfile:
+        path: "C:\\Program Files\\httpd\\Apache24\\conf\\httpd.conf"
+        backrefs: yes
+        regex: '^Define SRVROOT \"\/Apache24\"'
+        line: "Define SRVROOT \"C:\\Program Files\\httpd\\Apache24\""
+
+    - name: Check status service httpd
+      ansible.windows.win_service:
+        name: "{{ item }}"
+        state: started
+      register: services_started
+      ignore_errors: true
+      with_items:
+            - Apache2.4
+
+    - name: Install and start httpd
+      ansible.windows.win_shell: |
+        .\httpd.exe -k install
+        .\httpd.exe -k start
+      args:
+        chdir: "C:\\Program\ Files\\httpd\\Apache24\\bin"
+        executable: "%SystemRoot%\\system32\\WindowsPowerShell\\v1.0\\powershell.exe"
+      when: services_started.results[0].state != "running"

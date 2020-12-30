@@ -1,0 +1,21 @@
+<source>
+  @type tail
+  path C:\Program Files\httpd\Apache24\logs\access.log
+  pos_file C:\opt\td-agent\httpd-access.log.pos
+  tag apache.access 
+  format apache2
+</source>
+<match **>
+  @type gelf
+  host "192.168.0.56"
+  port 12201
+  protocol udp
+  <buffer>
+    flush_interval 5s
+  </buffer>
+</match>
+
+
+# install module
+#fluent-gem install fluent-plugin-gelf
+
