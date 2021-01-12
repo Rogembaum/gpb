@@ -19,3 +19,6 @@
 # install module
 #fluent-gem install fluent-plugin-gelf
 
+# run with extra-var
+#ansible-playbook win_fluentdy_role.yml --extra-var "__fluentd_distr_msi=http://packages.treasuredata.com.s3.amazonaws.com/4/windows/td-agent-4.0.1-x64.msi"
+
