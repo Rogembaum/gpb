@@ -1,0 +1,4 @@
+---
+# defaults file for fluentd-windows
+__fluentd_gem_bin: "C:\\opt\\td-agent\\bin\\fluent-gem.bat"
+__fluentd_gem_gelf: "fluent-plugin-gelf"

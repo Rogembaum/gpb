@@ -1,0 +1,6 @@
+---
+# handlers file for fluentd-windows
+- name: restart fluentd
+  win_service:
+    name: fluentdwinsvc
+    state: restarted

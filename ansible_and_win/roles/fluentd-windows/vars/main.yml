@@ -1,0 +1,5 @@
+---
+# vars file for fluentd-windows
+ip_address_graylog_server: 192.168.0.222
+apache_access_log: "C:\\Program\ Files\\httpd\\Apache24\\logs\\access.log"
+__fluentd_distr_msi: "C:\\tmp\\td-agent-4.0.1-x64.msi"
